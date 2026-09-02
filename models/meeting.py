@@ -91,12 +91,12 @@ class CyanMeetingMinute(models.Model):
             meeting.open_resolution_count = 0
             meeting.overdue_resolution_count = 0
 
-        persisted_meetings = self.filtered(lambda meeting: meeting.id)
-        if not persisted_meetings:
+        origin_meetings = self._origin
+        if not origin_meetings:
             return
 
-        values = {meeting.id: [0, 0, 0] for meeting in persisted_meetings}
-        meeting_domain = [("meeting_id", "in", persisted_meetings.ids)]
+        values = {meeting.id: [0, 0, 0] for meeting in origin_meetings}
+        meeting_domain = [("meeting_id", "in", origin_meetings.ids)]
         today = fields.Date.context_today(self)
         Resolution = self.env["cyan.meeting.resolution"]
         for meeting, count in Resolution._read_group(
@@ -116,8 +116,9 @@ class CyanMeetingMinute(models.Model):
             ["meeting_id"], ["__count"],
         ):
             values[meeting.id][2] = count
-        for meeting in persisted_meetings:
-            meeting.resolution_count, meeting.open_resolution_count, meeting.overdue_resolution_count = values[meeting.id]
+        for meeting in self:
+            if meeting._origin:
+                meeting.resolution_count, meeting.open_resolution_count, meeting.overdue_resolution_count = values[meeting._origin.id]
 
     def action_confirm(self):
         for meeting in self:
