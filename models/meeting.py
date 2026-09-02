@@ -86,25 +86,37 @@ class CyanMeetingMinute(models.Model):
 
     @api.depends("resolution_ids.state", "resolution_ids.deadline")
     def _compute_resolution_counts(self):
-        values = {meeting.id: [0, 0, 0] for meeting in self}
-        if self.ids:
-            today = fields.Date.context_today(self)
-            Resolution = self.env["cyan.meeting.resolution"]
-            for meeting, count in Resolution._read_group(
-                [("meeting_id", "in", self.ids)], ["meeting_id"], ["__count"],
-            ):
-                values[meeting.id][0] = count
-            for meeting, count in Resolution._read_group(
-                [("meeting_id", "in", self.ids), ("state", "not in", ("done", "cancelled"))],
-                ["meeting_id"], ["__count"],
-            ):
-                values[meeting.id][1] = count
-            for meeting, count in Resolution._read_group(
-                [("meeting_id", "in", self.ids), ("state", "not in", ("done", "cancelled")), ("deadline", "<", today)],
-                ["meeting_id"], ["__count"],
-            ):
-                values[meeting.id][2] = count
         for meeting in self:
+            meeting.resolution_count = 0
+            meeting.open_resolution_count = 0
+            meeting.overdue_resolution_count = 0
+
+        persisted_meetings = self.filtered(lambda meeting: meeting.id)
+        if not persisted_meetings:
+            return
+
+        values = {meeting.id: [0, 0, 0] for meeting in persisted_meetings}
+        meeting_domain = [("meeting_id", "in", persisted_meetings.ids)]
+        today = fields.Date.context_today(self)
+        Resolution = self.env["cyan.meeting.resolution"]
+        for meeting, count in Resolution._read_group(
+            meeting_domain, ["meeting_id"], ["__count"],
+        ):
+            values[meeting.id][0] = count
+        for meeting, count in Resolution._read_group(
+            meeting_domain + [("state", "not in", ("done", "cancelled"))],
+            ["meeting_id"], ["__count"],
+        ):
+            values[meeting.id][1] = count
+        for meeting, count in Resolution._read_group(
+            meeting_domain + [
+                ("state", "not in", ("done", "cancelled")),
+                ("deadline", "<", today),
+            ],
+            ["meeting_id"], ["__count"],
+        ):
+            values[meeting.id][2] = count
+        for meeting in persisted_meetings:
             meeting.resolution_count, meeting.open_resolution_count, meeting.overdue_resolution_count = values[meeting.id]
 
     def action_confirm(self):
