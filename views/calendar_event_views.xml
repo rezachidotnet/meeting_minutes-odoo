@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_calendar_event_form_meeting_minutes" model="ir.ui.view">
+        <field name="name">calendar.event.form.meeting.minutes</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_meeting_minutes" type="object" class="oe_stat_button" icon="fa-file-text-o" invisible="meeting_minute_count != 0">
+                    <div class="o_stat_info"><span class="o_stat_text">Create Meeting Minutes</span></div>
+                </button>
+                <button name="action_open_meeting_minutes" type="object" class="oe_stat_button" icon="fa-file-text-o" invisible="meeting_minute_count == 0">
+                    <field name="meeting_minute_count" widget="statinfo" string="Meeting Minutes"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

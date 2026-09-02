@@ -1,11 +1,11 @@
 {
     "name": "Cyan Meeting Minutes",
-    "version": "19.0.1.2.0",
+    "version": "19.0.1.3.0",
     "author": "Cyan",
     "category": "Productivity/Meetings",
     "summary": "Internal meeting minutes and resolution tracking",
     "license": "LGPL-3",
-    "depends": ["base", "mail", "web"],
+    "depends": ["base", "mail", "web", "calendar"],
     "data": [
         "security/meeting_security.xml",
         "security/ir.model.access.csv",
@@ -13,6 +13,7 @@
         "data/escalation_cron.xml",
         "views/meeting_views.xml",
         "views/resolution_views.xml",
+        "views/calendar_event_views.xml",
         "views/menus.xml",
         "report/meeting_report_templates.xml",
         "report/meeting_report.xml",

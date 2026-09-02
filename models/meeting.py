@@ -32,6 +32,10 @@ class CyanMeetingMinute(models.Model):
         string="Attendees", domain="[('share', '=', False)]", check_company=True,
         tracking=True,
     )
+    calendar_event_id = fields.Many2one(
+        "calendar.event", string="Calendar Event", copy=False, readonly=True,
+        ondelete="set null", index=True, tracking=True,
+    )
     agenda = fields.Html(sanitize=True)
     minutes = fields.Html(string="Meeting Minutes", sanitize=True)
     resolution_ids = fields.One2many("cyan.meeting.resolution", "meeting_id", string="Resolutions")
@@ -45,6 +49,10 @@ class CyanMeetingMinute(models.Model):
     overdue_resolution_count = fields.Integer(compute="_compute_resolution_counts", string="Overdue Resolutions")
 
     _reference_unique = models.Constraint("unique(reference)", "Meeting reference must be unique.")
+    _calendar_event_unique = models.Constraint(
+        "unique(calendar_event_id)",
+        "A Calendar Event can only be linked to one Meeting Minutes record.",
+    )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -55,6 +63,16 @@ class CyanMeetingMinute(models.Model):
         return super().create(vals_list)
 
     def write(self, vals):
+        scheduling_fields = {
+            "name", "company_id", "meeting_date", "start_datetime", "end_datetime",
+            "location", "organizer_id", "attendee_ids",
+        }
+        if (
+            scheduling_fields.intersection(vals)
+            and not self.env.context.get("cyan_calendar_sync")
+            and self.filtered("calendar_event_id")
+        ):
+            raise UserError(_("Update scheduling information from the linked Calendar Event."))
         if vals.get("state") in ("done", "cancelled"):
             if not self.env.user.has_group("cyan_meeting_minutes.group_meeting_manager"):
                 raise UserError(_("Only a Meeting Manager may complete or cancel meetings."))
@@ -148,3 +166,39 @@ class CyanMeetingMinute(models.Model):
         action["domain"] = [("meeting_id", "=", self.id)]
         action["context"] = {"default_meeting_id": self.id}
         return action
+
+    def action_open_calendar_event(self):
+        self.ensure_one()
+        if not self.calendar_event_id:
+            raise UserError(_("This meeting is not linked to a Calendar Event."))
+        self.calendar_event_id.check_access("read")
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Calendar Event"),
+            "res_model": "calendar.event",
+            "res_id": self.calendar_event_id.id,
+            "view_mode": "form",
+            "target": "current",
+        }
+
+    def action_schedule_calendar_event(self):
+        self.ensure_one()
+        if self.calendar_event_id:
+            return self.action_open_calendar_event()
+        if not self.start_datetime or not self.end_datetime:
+            raise UserError(_("Set Start and End before scheduling this meeting in Calendar."))
+        partners = self.organizer_id.partner_id | self.attendee_ids.mapped("partner_id")
+        event = self.env["calendar.event"].create({
+            "name": self.name,
+            "start": self.start_datetime,
+            "stop": self.end_datetime,
+            "location": self.location,
+            "user_id": self.organizer_id.id,
+            "partner_ids": [(6, 0, partners.ids)],
+        })
+        self.calendar_event_id = event
+        self.message_post(
+            body=_("Linked to Calendar event: %s", event.name),
+            subtype_xmlid="mail.mt_note",
+        )
+        return self.action_open_calendar_event()

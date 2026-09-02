@@ -30,6 +30,12 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
+                        <button name="action_open_calendar_event" type="object" class="oe_stat_button" icon="fa-calendar" invisible="not calendar_event_id">
+                            <div class="o_stat_info"><span class="o_stat_text">Calendar Event</span></div>
+                        </button>
+                        <button name="action_schedule_calendar_event" type="object" class="oe_stat_button" icon="fa-calendar-plus-o" invisible="calendar_event_id">
+                            <div class="o_stat_info"><span class="o_stat_text">Schedule in Calendar</span></div>
+                        </button>
                         <button name="action_view_resolutions" type="object" class="oe_stat_button" icon="fa-list-check">
                             <field name="resolution_count" widget="statinfo" string="Resolutions"/>
                         </button>
@@ -42,22 +48,23 @@
                     </div>
                     <widget name="web_ribbon" text="Archived" bg_color="text-bg-danger" invisible="active"/>
                     <field name="active" invisible="1"/>
+                    <field name="calendar_event_id" invisible="1"/>
                     <div class="oe_title">
                         <label for="reference"/>
                         <h1><field name="reference"/></h1>
-                        <h2><field name="name" placeholder="e.g. Weekly Operations Meeting" readonly="state == 'done'"/></h2>
+                        <h2><field name="name" placeholder="e.g. Weekly Operations Meeting" readonly="state == 'done' or calendar_event_id"/></h2>
                     </div>
                     <group>
                         <group>
-                            <field name="company_id" groups="base.group_multi_company" readonly="state == 'done'"/>
-                            <field name="meeting_date" readonly="state == 'done'"/>
-                            <field name="start_datetime" readonly="state == 'done'"/>
-                            <field name="end_datetime" readonly="state == 'done'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state == 'done' or calendar_event_id"/>
+                            <field name="meeting_date" readonly="state == 'done' or calendar_event_id"/>
+                            <field name="start_datetime" readonly="state == 'done' or calendar_event_id"/>
+                            <field name="end_datetime" readonly="state == 'done' or calendar_event_id"/>
                         </group>
                         <group>
-                            <field name="organizer_id" widget="many2one_avatar_user" readonly="state == 'done'"/>
-                            <field name="attendee_ids" widget="many2many_avatar_user" readonly="state == 'done'"/>
-                            <field name="location" readonly="state == 'done'"/>
+                            <field name="organizer_id" widget="many2one_avatar_user" readonly="state == 'done' or calendar_event_id"/>
+                            <field name="attendee_ids" widget="many2many_avatar_user" readonly="state == 'done' or calendar_event_id"/>
+                            <field name="location" readonly="state == 'done' or calendar_event_id"/>
                         </group>
                     </group>
                     <notebook>
