@@ -4,7 +4,7 @@
         <field name="name">cyan.meeting.resolution.list</field>
         <field name="model">cyan.meeting.resolution</field>
         <field name="arch" type="xml">
-            <list string="Meeting Resolutions" decoration-danger="deadline_status == 'overdue'" decoration-warning="deadline_status == 'today'" decoration-muted="state in ('done', 'cancelled')">
+            <list string="Meeting Resolutions" decoration-danger="deadline_status == 'overdue'" decoration-warning="deadline_status == 'today'" decoration-success="state == 'done'" decoration-muted="state == 'cancelled'">
                 <field name="priority" widget="priority"/>
                 <field name="name"/>
                 <field name="meeting_id"/>
@@ -13,6 +13,22 @@
                 <field name="deadline_status"/>
                 <field name="state" widget="badge"/>
                 <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_my_meeting_resolution_list" model="ir.ui.view">
+        <field name="name">cyan.meeting.resolution.my.list</field>
+        <field name="model">cyan.meeting.resolution</field>
+        <field name="arch" type="xml">
+            <list string="My Resolutions" decoration-danger="deadline_status == 'overdue'" decoration-warning="deadline_status == 'today'" decoration-success="state == 'done'" decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="meeting_id"/>
+                <field name="deadline"/>
+                <field name="priority" widget="priority"/>
+                <field name="deadline_status" string="Deadline Status"/>
+                <field name="state" widget="badge"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
             </list>
         </field>
     </record>
@@ -72,16 +88,18 @@
                 <filter name="in_progress" string="In Progress" domain="[('state', '=', 'in_progress')]"/>
                 <filter name="overdue" string="Overdue" domain="[('deadline_status', '=', 'overdue')]"/>
                 <filter name="due_today" string="Due Today" domain="[('deadline_status', '=', 'today')]"/>
+                <filter name="upcoming" string="Upcoming" domain="[('deadline_status', '=', 'upcoming')]"/>
                 <filter name="done" string="Done" domain="[('state', '=', 'done')]"/>
                 <filter name="this_week" string="This Week" domain="[('deadline', '&gt;=', context_today().strftime('%Y-%m-%d')), ('deadline', '&lt;=', (context_today() + relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
                 <separator/>
                 <filter string="Deadline" name="deadline_group" date="deadline"/>
                 <group>
-                    <filter name="group_responsible" string="Responsible" context="{'group_by': 'responsible_id'}"/>
-                    <filter name="group_meeting" string="Meeting" context="{'group_by': 'meeting_id'}"/>
-                    <filter name="group_company" string="Company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
-                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
                     <filter name="group_deadline" string="Deadline" context="{'group_by': 'deadline'}"/>
+                    <filter name="group_meeting" string="Meeting" context="{'group_by': 'meeting_id'}"/>
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_priority" string="Priority" context="{'group_by': 'priority'}"/>
+                    <filter name="group_responsible" string="Responsible" context="{'group_by': 'responsible_id'}" groups="cyan_meeting_minutes.group_meeting_manager"/>
+                    <filter name="group_company" string="Company" context="{'group_by': 'company_id'}" groups="cyan_meeting_minutes.group_meeting_manager"/>
                 </group>
             </search>
         </field>
@@ -94,5 +112,16 @@
         <field name="search_view_id" ref="view_meeting_resolution_search"/>
         <field name="context">{'search_default_open_items': 1}</field>
         <field name="help" type="html"><p class="o_view_nocontent_smiling_face">Track meeting resolutions and action items</p></field>
+    </record>
+
+    <record id="action_my_meeting_resolution" model="ir.actions.act_window">
+        <field name="name">My Resolutions</field>
+        <field name="res_model">cyan.meeting.resolution</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_my_meeting_resolution_list"/>
+        <field name="search_view_id" ref="view_meeting_resolution_search"/>
+        <field name="domain">[('responsible_id', '=', uid)]</field>
+        <field name="context">{'search_default_open_items': 1}</field>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">Your active meeting resolutions will appear here</p></field>
     </record>
 </odoo>

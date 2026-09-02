@@ -31,6 +31,25 @@
             <field name="model_id" ref="model_cyan_meeting_resolution"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
         </record>
+        <record id="rule_resolution_user_write_own" model="ir.rule">
+            <field name="name">Meeting Resolutions: users write assigned actions</field>
+            <field name="model_id" ref="model_cyan_meeting_resolution"/>
+            <field name="groups" eval="[(4, ref('group_meeting_user'))]"/>
+            <field name="domain_force">[('responsible_id', '=', user.id)]</field>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        <record id="rule_resolution_manager_write_all" model="ir.rule">
+            <field name="name">Meeting Resolutions: managers write company actions</field>
+            <field name="model_id" ref="model_cyan_meeting_resolution"/>
+            <field name="groups" eval="[(4, ref('group_meeting_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
     </data>
 </odoo>
-

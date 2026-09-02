@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <menuitem id="menu_meeting_root" name="Meetings" sequence="35" groups="cyan_meeting_minutes.group_meeting_user"/>
+    <menuitem id="menu_my_meeting_resolutions" name="My Resolutions" parent="menu_meeting_root" action="action_my_meeting_resolution" sequence="5"/>
     <menuitem id="menu_meeting_minutes" name="Meeting Minutes" parent="menu_meeting_root" action="action_meeting_minute" sequence="10"/>
-    <menuitem id="menu_meeting_resolutions" name="Resolutions" parent="menu_meeting_root" action="action_meeting_resolution" sequence="20"/>
+    <menuitem id="menu_meeting_resolutions" name="All Resolutions" parent="menu_meeting_root" action="action_meeting_resolution" sequence="20" groups="cyan_meeting_minutes.group_meeting_manager"/>
 </odoo>

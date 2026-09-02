@@ -1,6 +1,6 @@
 {
     "name": "Cyan Meeting Minutes",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "author": "Cyan",
     "category": "Productivity/Meetings",
     "summary": "Internal meeting minutes and resolution tracking",
@@ -19,4 +19,3 @@
     "application": True,
     "installable": True,
 }
-
