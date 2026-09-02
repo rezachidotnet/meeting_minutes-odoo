@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_meeting_minute_list" model="ir.ui.view">
+        <field name="name">cyan.meeting.minute.list</field>
+        <field name="model">cyan.meeting.minute</field>
+        <field name="arch" type="xml">
+            <list string="Meeting Minutes" decoration-muted="state == 'cancelled'" decoration-success="state == 'done'">
+                <field name="reference"/>
+                <field name="meeting_date"/>
+                <field name="name"/>
+                <field name="organizer_id" widget="many2one_avatar_user"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="open_resolution_count" string="Open Actions"/>
+                <field name="state" widget="badge" decoration-info="state == 'confirmed'" decoration-success="state == 'done'" decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_form" model="ir.ui.view">
+        <field name="name">cyan.meeting.minute.form</field>
+        <field name="model">cyan.meeting.minute</field>
+        <field name="arch" type="xml">
+            <form string="Meeting Minutes">
+                <header>
+                    <button name="action_confirm" type="object" string="Confirm" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_done" type="object" string="Complete" class="btn-primary" groups="cyan_meeting_minutes.group_meeting_manager" invisible="state != 'confirmed'"/>
+                    <button name="action_cancel" type="object" string="Cancel" groups="cyan_meeting_minutes.group_meeting_manager" invisible="state in ('done', 'cancelled')" confirm="Cancel this meeting?"/>
+                    <button name="action_reset_draft" type="object" string="Reset to Draft" groups="cyan_meeting_minutes.group_meeting_manager" invisible="state not in ('done', 'cancelled')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_resolutions" type="object" class="oe_stat_button" icon="fa-list-check">
+                            <field name="resolution_count" widget="statinfo" string="Resolutions"/>
+                        </button>
+                        <button name="action_view_resolutions" type="object" class="oe_stat_button" icon="fa-hourglass-half" context="{'search_default_open_items': 1}">
+                            <field name="open_resolution_count" widget="statinfo" string="Open"/>
+                        </button>
+                        <button name="action_view_resolutions" type="object" class="oe_stat_button" icon="fa-exclamation-triangle" context="{'search_default_overdue': 1}">
+                            <field name="overdue_resolution_count" widget="statinfo" string="Overdue"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" text="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="reference"/>
+                        <h1><field name="reference"/></h1>
+                        <h2><field name="name" placeholder="e.g. Weekly Operations Meeting" readonly="state == 'done'"/></h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state == 'done'"/>
+                            <field name="meeting_date" readonly="state == 'done'"/>
+                            <field name="start_datetime" readonly="state == 'done'"/>
+                            <field name="end_datetime" readonly="state == 'done'"/>
+                        </group>
+                        <group>
+                            <field name="organizer_id" widget="many2one_avatar_user" readonly="state == 'done'"/>
+                            <field name="attendee_ids" widget="many2many_avatar_user" readonly="state == 'done'"/>
+                            <field name="location" readonly="state == 'done'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Agenda" name="agenda">
+                            <field name="agenda" widget="html" readonly="state == 'done'" placeholder="Meeting agenda..."/>
+                        </page>
+                        <page string="Meeting Minutes" name="minutes">
+                            <field name="minutes" widget="html" readonly="state == 'done'" placeholder="Detailed minutes and discussion notes..."/>
+                        </page>
+                        <page string="Resolutions" name="resolutions">
+                            <field name="resolution_ids" context="{'default_company_id': company_id}" readonly="state == 'done'">
+                                <list editable="bottom" decoration-danger="deadline_status == 'overdue'" decoration-muted="state in ('done', 'cancelled')">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="responsible_id" widget="many2one_avatar_user"/>
+                                    <field name="deadline"/>
+                                    <field name="deadline_status" optional="show"/>
+                                    <field name="priority" widget="priority"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Additional Information" name="additional">
+                            <group>
+                                <field name="create_uid" readonly="1"/>
+                                <field name="create_date" readonly="1"/>
+                                <field name="write_uid" readonly="1"/>
+                                <field name="write_date" readonly="1"/>
+                            </group>
+                            <p class="text-muted">Attach supporting files through the chatter below.</p>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_search" model="ir.ui.view">
+        <field name="name">cyan.meeting.minute.search</field>
+        <field name="model">cyan.meeting.minute</field>
+        <field name="arch" type="xml">
+            <search string="Search Meeting Minutes">
+                <field name="reference"/>
+                <field name="name"/>
+                <field name="organizer_id"/>
+                <field name="attendee_ids"/>
+                <field name="meeting_date"/>
+                <field name="state"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <separator/>
+                <filter name="my_meetings" string="My Meetings" domain="['|', ('organizer_id', '=', uid), ('attendee_ids', 'in', uid)]"/>
+                <filter name="open_meetings" string="Open" domain="[('state', 'in', ('draft', 'confirmed'))]"/>
+                <filter name="completed" string="Completed" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter string="Meeting Date" name="meeting_date_group" date="meeting_date"/>
+                <group>
+                    <filter name="group_organizer" string="Organizer" context="{'group_by': 'organizer_id'}"/>
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_company" string="Company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_meeting_minute" model="ir.actions.act_window">
+        <field name="name">Meeting Minutes</field>
+        <field name="res_model">cyan.meeting.minute</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_meeting_minute_search"/>
+        <field name="context">{'search_default_open_meetings': 1}</field>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">Create internal meeting minutes</p></field>
+    </record>
+</odoo>

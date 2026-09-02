@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_meeting_minutes" model="ir.actions.report">
+        <field name="name">Meeting Minutes</field>
+        <field name="model">cyan.meeting.minute</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">cyan_meeting_minutes.report_meeting_minutes</field>
+        <field name="report_file">cyan_meeting_minutes.report_meeting_minutes</field>
+        <field name="binding_model_id" ref="model_cyan_meeting_minute"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Meeting Minutes - %s' % (object.reference or '')</field>
+    </record>
+</odoo>

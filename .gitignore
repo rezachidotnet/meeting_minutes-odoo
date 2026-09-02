@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*.bak
+*.bak-*
+*.log
+.DS_Store
+.pytest_cache/
+.coverage
+*.swp
+*.tmp

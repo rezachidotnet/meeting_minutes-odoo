@@ -1,0 +1,22 @@
+{
+    "name": "Cyan Meeting Minutes",
+    "version": "19.0.1.0.0",
+    "author": "Cyan",
+    "category": "Productivity/Meetings",
+    "summary": "Internal meeting minutes and resolution tracking",
+    "license": "LGPL-3",
+    "depends": ["base", "mail", "web"],
+    "data": [
+        "security/meeting_security.xml",
+        "security/ir.model.access.csv",
+        "data/meeting_sequence.xml",
+        "views/meeting_views.xml",
+        "views/resolution_views.xml",
+        "views/menus.xml",
+        "report/meeting_report_templates.xml",
+        "report/meeting_report.xml",
+    ],
+    "application": True,
+    "installable": True,
+}
+

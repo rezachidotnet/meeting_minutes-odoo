@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_meeting_user,Meeting minute user,model_cyan_meeting_minute,group_meeting_user,1,1,1,0
+access_meeting_manager,Meeting minute manager,model_cyan_meeting_minute,group_meeting_manager,1,1,1,1
+access_resolution_user,Meeting resolution user,model_cyan_meeting_resolution,group_meeting_user,1,1,1,0
+access_resolution_manager,Meeting resolution manager,model_cyan_meeting_resolution,group_meeting_manager,1,1,1,1
+

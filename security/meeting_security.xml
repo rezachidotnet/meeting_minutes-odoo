@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="privilege_meeting_minutes" model="res.groups.privilege">
+            <field name="name">Meeting Minutes</field>
+            <field name="sequence">35</field>
+            <field name="category_id" ref="base.module_category_productivity"/>
+        </record>
+        <record id="group_meeting_user" model="res.groups">
+            <field name="name">User</field>
+            <field name="sequence">10</field>
+            <field name="privilege_id" ref="privilege_meeting_minutes"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+        <record id="group_meeting_manager" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="sequence">20</field>
+            <field name="privilege_id" ref="privilege_meeting_minutes"/>
+            <field name="implied_ids" eval="[(4, ref('group_meeting_user'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+    </data>
+    <data noupdate="1">
+        <record id="rule_meeting_company" model="ir.rule">
+            <field name="name">Meeting Minutes: company isolation</field>
+            <field name="model_id" ref="model_cyan_meeting_minute"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_resolution_company" model="ir.rule">
+            <field name="name">Meeting Resolutions: company isolation</field>
+            <field name="model_id" ref="model_cyan_meeting_resolution"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+    </data>
+</odoo>
+

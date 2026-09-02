@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_meeting_minutes_document">
+        <t t-call="web.external_layout">
+            <t t-set="doc" t-value="doc.with_context(lang=doc.env.user.lang)"/>
+            <div class="page">
+                <h2>Internal Meeting Minutes</h2>
+                <table class="table table-sm table-borderless">
+                    <tr><th>Reference</th><td><span t-field="doc.reference"/></td><th>Meeting Date</th><td><span t-field="doc.meeting_date"/></td></tr>
+                    <tr><th>Title</th><td colspan="3"><span t-field="doc.name"/></td></tr>
+                    <tr><th>Location</th><td><span t-field="doc.location"/></td><th>Organizer</th><td><span t-field="doc.organizer_id.name"/></td></tr>
+                    <tr><th>Attendees</th><td colspan="3"><span t-esc="', '.join(doc.attendee_ids.mapped('name'))"/></td></tr>
+                </table>
+                <h3>Agenda</h3>
+                <div t-field="doc.agenda"/>
+                <h3>Meeting Minutes</h3>
+                <div t-field="doc.minutes"/>
+                <h3>Resolutions</h3>
+                <table class="table table-sm table-bordered">
+                    <thead><tr><th>No.</th><th>Resolution</th><th>Responsible</th><th>Deadline</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <tr t-foreach="doc.resolution_ids" t-as="resolution">
+                            <td><span t-esc="resolution_index + 1"/></td>
+                            <td><span t-field="resolution.name"/></td>
+                            <td><span t-field="resolution.responsible_id.name"/></td>
+                            <td><span t-field="resolution.deadline"/></td>
+                            <td><span t-field="resolution.state"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_meeting_minutes">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc"><t t-call="cyan_meeting_minutes.report_meeting_minutes_document"/></t>
+        </t>
+    </template>
+</odoo>
+

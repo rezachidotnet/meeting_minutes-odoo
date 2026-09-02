@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_meeting_resolution_list" model="ir.ui.view">
+        <field name="name">cyan.meeting.resolution.list</field>
+        <field name="model">cyan.meeting.resolution</field>
+        <field name="arch" type="xml">
+            <list string="Meeting Resolutions" decoration-danger="deadline_status == 'overdue'" decoration-warning="deadline_status == 'today'" decoration-muted="state in ('done', 'cancelled')">
+                <field name="priority" widget="priority"/>
+                <field name="name"/>
+                <field name="meeting_id"/>
+                <field name="responsible_id" widget="many2one_avatar_user"/>
+                <field name="deadline"/>
+                <field name="deadline_status"/>
+                <field name="state" widget="badge"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_meeting_resolution_form" model="ir.ui.view">
+        <field name="name">cyan.meeting.resolution.form</field>
+        <field name="model">cyan.meeting.resolution</field>
+        <field name="arch" type="xml">
+            <form string="Meeting Resolution">
+                <header>
+                    <button name="action_start" type="object" string="Start" class="btn-primary" invisible="state != 'open'"/>
+                    <button name="action_done" type="object" string="Mark Done" class="btn-primary" invisible="state in ('done', 'cancelled')"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state in ('done', 'cancelled')"/>
+                    <button name="action_reopen" type="object" string="Reopen" invisible="state not in ('done', 'cancelled')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="open,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><label for="name"/><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="meeting_id"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="1"/>
+                            <field name="responsible_id" widget="many2one_avatar_user"/>
+                        </group>
+                        <group>
+                            <field name="deadline"/>
+                            <field name="deadline_status" readonly="1"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="completion_date" invisible="state != 'done'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description"><field name="description" widget="html"/></page>
+                        <page string="Completion Notes"><field name="result" widget="html"/></page>
+                    </notebook>
+                    <field name="activity_id" invisible="1"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_meeting_resolution_search" model="ir.ui.view">
+        <field name="name">cyan.meeting.resolution.search</field>
+        <field name="model">cyan.meeting.resolution</field>
+        <field name="arch" type="xml">
+            <search string="Search Resolutions">
+                <field name="name"/>
+                <field name="meeting_id"/>
+                <field name="responsible_id"/>
+                <field name="deadline"/>
+                <field name="state"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <separator/>
+                <filter name="my_resolutions" string="My Resolutions" domain="[('responsible_id', '=', uid)]"/>
+                <filter name="open_items" string="Open" domain="[('state', 'not in', ('done', 'cancelled'))]"/>
+                <filter name="in_progress" string="In Progress" domain="[('state', '=', 'in_progress')]"/>
+                <filter name="overdue" string="Overdue" domain="[('deadline_status', '=', 'overdue')]"/>
+                <filter name="due_today" string="Due Today" domain="[('deadline_status', '=', 'today')]"/>
+                <filter name="done" string="Done" domain="[('state', '=', 'done')]"/>
+                <filter name="this_week" string="This Week" domain="[('deadline', '&gt;=', context_today().strftime('%Y-%m-%d')), ('deadline', '&lt;=', (context_today() + relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Deadline" name="deadline_group" date="deadline"/>
+                <group>
+                    <filter name="group_responsible" string="Responsible" context="{'group_by': 'responsible_id'}"/>
+                    <filter name="group_meeting" string="Meeting" context="{'group_by': 'meeting_id'}"/>
+                    <filter name="group_company" string="Company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_deadline" string="Deadline" context="{'group_by': 'deadline'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_meeting_resolution" model="ir.actions.act_window">
+        <field name="name">Resolutions</field>
+        <field name="res_model">cyan.meeting.resolution</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_meeting_resolution_search"/>
+        <field name="context">{'search_default_open_items': 1}</field>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">Track meeting resolutions and action items</p></field>
+    </record>
+</odoo>
