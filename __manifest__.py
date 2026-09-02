@@ -1,6 +1,6 @@
 {
     "name": "Cyan Meeting Minutes",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.2.0",
     "author": "Cyan",
     "category": "Productivity/Meetings",
     "summary": "Internal meeting minutes and resolution tracking",
@@ -10,6 +10,7 @@
         "security/meeting_security.xml",
         "security/ir.model.access.csv",
         "data/meeting_sequence.xml",
+        "data/escalation_cron.xml",
         "views/meeting_views.xml",
         "views/resolution_views.xml",
         "views/menus.xml",

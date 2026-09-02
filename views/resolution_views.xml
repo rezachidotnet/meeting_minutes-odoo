@@ -56,9 +56,15 @@
                         <group>
                             <field name="deadline"/>
                             <field name="deadline_status" readonly="1"/>
+                            <field name="days_overdue" readonly="1" invisible="days_overdue == 0"/>
                             <field name="priority" widget="priority"/>
                             <field name="completion_date" invisible="state != 'done'"/>
                         </group>
+                    </group>
+                    <group string="Escalation" invisible="not is_escalated">
+                        <field name="is_escalated" readonly="1"/>
+                        <field name="escalated_on" readonly="1"/>
+                        <field name="escalated_to_id" readonly="1" widget="many2one_avatar_user"/>
                     </group>
                     <notebook>
                         <page string="Description"><field name="description" widget="html"/></page>
@@ -123,5 +129,72 @@
         <field name="domain">[('responsible_id', '=', uid)]</field>
         <field name="context">{'search_default_open_items': 1}</field>
         <field name="help" type="html"><p class="o_view_nocontent_smiling_face">Your active meeting resolutions will appear here</p></field>
+    </record>
+
+    <record id="view_management_followup_list" model="ir.ui.view">
+        <field name="name">cyan.meeting.resolution.management.followup.list</field>
+        <field name="model">cyan.meeting.resolution</field>
+        <field name="arch" type="xml">
+            <list string="Management Follow-up" default_order="is_escalated desc, deadline asc, priority desc" decoration-bf="is_escalated" decoration-danger="deadline_status == 'overdue'" decoration-warning="deadline_status == 'today'" decoration-info="is_due_soon" decoration-success="state == 'done'" decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="meeting_id"/>
+                <field name="responsible_id" widget="many2one_avatar_user"/>
+                <field name="deadline"/>
+                <field name="days_overdue" string="Days Late"/>
+                <field name="priority" widget="priority"/>
+                <field name="deadline_status" string="Deadline Status"/>
+                <field name="state" widget="badge"/>
+                <field name="is_escalated"/>
+                <field name="escalated_to_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="is_due_soon" column_invisible="True"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_management_followup_search" model="ir.ui.view">
+        <field name="name">cyan.meeting.resolution.management.followup.search</field>
+        <field name="model">cyan.meeting.resolution</field>
+        <field name="arch" type="xml">
+            <search string="Management Follow-up">
+                <field name="name"/>
+                <field name="meeting_id"/>
+                <field name="responsible_id"/>
+                <field name="deadline"/>
+                <field name="escalated_to_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <separator/>
+                <filter name="open" string="Open" domain="[('state', '=', 'open')]"/>
+                <filter name="in_progress" string="In Progress" domain="[('state', '=', 'in_progress')]"/>
+                <filter name="overdue" string="Overdue" domain="[('deadline_status', '=', 'overdue')]"/>
+                <filter name="due_today" string="Due Today" domain="[('deadline_status', '=', 'today')]"/>
+                <filter name="due_soon" string="Due Soon" domain="[('is_due_soon', '=', True)]"/>
+                <filter name="escalated" string="Escalated" domain="[('is_escalated', '=', True)]"/>
+                <filter name="not_escalated" string="Not Escalated" domain="[('is_escalated', '=', False)]"/>
+                <filter name="high_priority" string="High Priority" domain="[('priority', 'in', ('2', '3'))]"/>
+                <filter name="this_week" string="This Week" domain="[('deadline', '&gt;=', context_today().strftime('%Y-%m-%d')), ('deadline', '&lt;=', (context_today() + relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group>
+                    <filter name="group_responsible" string="Responsible" context="{'group_by': 'responsible_id'}"/>
+                    <filter name="group_meeting" string="Meeting" context="{'group_by': 'meeting_id'}"/>
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_priority" string="Priority" context="{'group_by': 'priority'}"/>
+                    <filter name="group_deadline" string="Deadline" context="{'group_by': 'deadline'}"/>
+                    <filter name="group_company" string="Company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                    <filter name="group_escalated_to" string="Escalated To" context="{'group_by': 'escalated_to_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_management_followup" model="ir.actions.act_window">
+        <field name="name">Management Follow-up</field>
+        <field name="res_model">cyan.meeting.resolution</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_management_followup_list"/>
+        <field name="search_view_id" ref="view_management_followup_search"/>
+        <field name="domain">[('state', 'not in', ('done', 'cancelled'))]</field>
+        <field name="group_ids" eval="[(4, ref('cyan_meeting_minutes.group_meeting_manager'))]"/>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">No unresolved meeting actions require follow-up</p></field>
     </record>
 </odoo>
